@@ -1,0 +1,42 @@
+
+module axi4_lite_master(
+    input ACLK, 
+    input ARESETN,
+    output reg [31:0] AWADDR, 
+    output reg AWVALID, 
+    input AWREADY,
+    output reg [31:0] WDATA, 
+    output reg WVALID, 
+    input WREADY,
+    input [31:0] RDATA, 
+    input RVALID, 
+    output reg [31:0] ARADDR, 
+    output reg ARVALID, 
+    input ARREADY
+);
+
+    task automatic write(input [31:0] addr, input [31:0] data);
+        @(posedge ACLK);
+        $display("[%0t] MASTER: Writing %08X to Address %08X", $time, data, addr);
+        AWADDR <= addr;
+        WDATA <= data;
+        AWVALID <= 1;
+        WVALID <= 1;
+        @(posedge ACLK);
+        while (~AWREADY || ~WREADY) @(posedge ACLK);
+        AWVALID <= 0;
+        WVALID <= 0;
+    endtask
+
+    task automatic read(input [31:0] addr);
+        @(posedge ACLK);
+        $display("[%0t] MASTER: Reading from Address %08X", $time, addr);
+        ARADDR <= addr;
+        ARVALID <= 1;
+        @(posedge ACLK);
+        while (~ARREADY) @(posedge ACLK);
+        ARVALID <= 0;
+        $display("[%0t] MASTER: Read Data %08X from Address %08X", $time, RDATA, addr);
+    endtask
+
+endmodule

@@ -1,0 +1,37 @@
+module top_axi4_lite(
+    input ACLK, 
+    input ARESETN
+);
+    // Instantiate the Master and Slave modules
+    axi4_lite_master master(
+        .ACLK(ACLK), 
+        .ARESETN(ARESETN),
+        .AWADDR(), 
+        .AWVALID(), 
+        .AWREADY(), 
+        .WDATA(), 
+        .WVALID(), 
+        .WREADY(), 
+        .RDATA(), 
+        .RVALID(), 
+        .ARADDR(), 
+        .ARVALID(), 
+        .ARREADY()
+    );
+
+    axi4_lite_slave slave(
+        .ACLK(ACLK), 
+        .ARESETN(ARESETN),
+        .AWADDR(), 
+        .AWVALID(), 
+        .AWREADY(), 
+        .WDATA(), 
+        .WVALID(), 
+        .WREADY(), 
+        .RDATA(), 
+        .ARADDR(), 
+        .ARVALID(), 
+        .ARREADY()
+    );
+
+endmodule

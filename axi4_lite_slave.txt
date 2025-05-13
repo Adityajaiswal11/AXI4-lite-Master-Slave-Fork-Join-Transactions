@@ -1,0 +1,46 @@
+
+module axi4_lite_slave(
+    input ACLK, 
+    input ARESETN,
+    input [31:0] AWADDR, 
+    input AWVALID, 
+    output reg AWREADY,
+    input [31:0] WDATA, 
+    input WVALID, 
+    output reg WREADY,
+    output reg [31:0] RDATA, 
+    input [31:0] ARADDR, 
+    input ARVALID, 
+    output reg ARREADY
+);
+
+    reg [31:0] mem [0:255]; // Example memory
+
+    always @(posedge ACLK) begin
+        if (ARESETN == 0) begin
+            AWREADY <= 0;
+            WREADY <= 0;
+            ARREADY <= 0;
+            RDATA <= 32'b0;
+        end else begin
+            if (AWVALID && WVALID) begin
+                mem[AWADDR[7:0]] <= WDATA;  // Store data into memory
+                $display("[%0t] SLAVE: Write Transaction at Address %08X, Data: %08X", $time, AWADDR, WDATA);
+                AWREADY <= 1;
+                WREADY <= 1;
+            end
+
+            if (ARVALID) begin
+                RDATA <= mem[ARADDR[7:0]];  // Read data from memory
+                $display("[%0t] SLAVE: Read Transaction at Address %08X, Data: %08X", $time, ARADDR, RDATA);
+                ARREADY <= 1;
+            end else begin
+                AWREADY <= 0;
+                WREADY <= 0;
+                ARREADY <= 0;
+            end
+        end
+    end
+
+endmodule
+

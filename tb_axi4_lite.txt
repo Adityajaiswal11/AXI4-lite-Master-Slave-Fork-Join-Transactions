@@ -1,0 +1,121 @@
+
+module tb_axi4_lite;
+    reg ACLK;
+    reg ARESETN;
+    reg [31:0] write_data;
+    reg [31:0] write_addr;
+    reg [31:0] read_addr;
+    wire [31:0] read_data;
+
+    // Instantiate the top module
+    top_axi4_lite top (
+        .ACLK(ACLK),
+        .ARESETN(ARESETN)
+    );
+
+    // Clock generation
+    initial begin
+        ACLK = 0;
+        forever #5 ACLK = ~ACLK;  // 10ns clock period
+    end
+
+    // Reset generation
+    initial begin
+        ARESETN = 0;
+        #10 ARESETN = 1;  // Reset assertion for 10ns
+    end
+
+    // Testbench stimulus and waveform dumping
+    initial begin
+        // Start dumping waveform to a VCD file
+        $dumpfile("waveform.vcd");      // Specify the output file
+        $dumpvars(0, top);              // Dump all signals from the top module (including master and slave)
+
+        $display("[%0t] Starting AXI4-Lite Master-Slave Verification", $time);
+        
+        // Wait for reset to be released
+        wait(ARESETN);
+
+        // Fork-join for multiple distinct transactions
+        fork
+            // Write Transaction 1
+            begin
+                write_addr = 32'h10;          // Write address 0x10
+                write_data = 32'hA5A5A5A5;    // Write data 0xA5A5A5A5
+                top.master.write(write_addr, write_data);
+                $display("[%0t] Writing 0xA5A5A5A5 to address 0x%0h", $time, write_addr);
+            end
+
+            // Read Transaction 1
+            begin
+                read_addr = 32'h10;           // Read address 0x10
+                top.master.read(read_addr);
+                $display("[%0t] Reading from address 0x%0h", $time, read_addr);
+            end
+
+            // Write Transaction 2
+            begin
+                write_addr = 32'h20;          // Write address 0x20
+                write_data = 32'h5A5A5A5A;    // Write data 0x5A5A5A5A
+                top.master.write(write_addr, write_data);
+                $display("[%0t] Writing 0x5A5A5A5A to address 0x%0h", $time, write_addr);
+            end
+
+            // Read Transaction 2
+            begin
+                read_addr = 32'h20;           // Read address 0x20
+                top.master.read(read_addr);
+                $display("[%0t] Reading from address 0x%0h", $time, read_addr);
+            end
+
+            // Write Transaction 3
+            begin
+                write_addr = 32'h30;          // Write address 0x30
+                write_data = 32'h12345678;    // Write data 0x12345678
+                top.master.write(write_addr, write_data);
+                $display("[%0t] Writing 0x12345678 to address 0x%0h", $time, write_addr);
+            end
+
+            // Read Transaction 3
+            begin
+                read_addr = 32'h30;           // Read address 0x30
+                top.master.read(read_addr);
+                $display("[%0t] Reading from address 0x%0h", $time, read_addr);
+            end
+
+            // Write Transaction 4
+            begin
+                write_addr = 32'h40;          // Write address 0x40
+                write_data = 32'hABCDEF01;    // Write data 0xABCDEF01
+                top.master.write(write_addr, write_data);
+                $display("[%0t] Writing 0xABCDEF01 to address 0x%0h", $time, write_addr);
+            end
+
+            // Read Transaction 4
+            begin
+                read_addr = 32'h40;           // Read address 0x40
+                top.master.read(read_addr);
+                $display("[%0t] Reading from address 0x%0h", $time, read_addr);
+            end
+
+            // Write Transaction 5
+            begin
+                write_addr = 32'h50;          // Write address 0x50
+                write_data = 32'hF0F0F0F0;    // Write data 0xF0F0F0F0
+                top.master.write(write_addr, write_data);
+                $display("[%0t] Writing 0xF0F0F0F0 to address 0x%0h", $time, write_addr);
+            end
+
+            // Read Transaction 5
+            begin
+                read_addr = 32'h50;           // Read address 0x50
+                top.master.read(read_addr);
+                $display("[%0t] Reading from address 0x%0h", $time, read_addr);
+            end
+        join
+
+        #100; // Wait for simulation to complete (100ns)
+        $display("[%0t] AXI4-Lite Master-Slave Test Completed", $time);
+        $finish;
+    end
+endmodule
